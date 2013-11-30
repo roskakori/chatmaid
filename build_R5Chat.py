@@ -1,12 +1,30 @@
 '''Build R5Chat.lua that integrates chatmaid.lua'''
+
+# Ensure Python is current enough.
+import sys
+if sys.version_info < (3, 3):
+    raise EnvironmentError('Python 3.3 or later must be installed')
+
+import errno
 import logging
-import os.path
+import os
 import shutil
+import zipfile
+
+__version__ = '0.1'
+
+# TODO: Obtain current Firefall patch number programatically.
+_FirefallVersion='0.7.1727'
+
+_buildFolder = os.path.abspath('build')
+_distFolder = os.path.abspath('dist')
 
 _R5ChatLuaPath = r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat\R5Chat.lua'
+_modifiedR5ChatLuaPath = os.path.join(_buildFolder, 'R5Chat.lua')
 
 _log = logging.getLogger('chatmaid')
 
+# Code to be injected in R5Chat.lua to call chatmaid's sanitize().
 _SanitizeLuaCode = [
     '\ttext, action = sanitized(args.channel, args.text)',
     '\tif action ~= nil then',
@@ -20,11 +38,23 @@ _SanitizeLuaCode = [
     '\tend',
 ]
 
+# Code for melder_info.ini.
+_MelderInfoCode = [
+    'title=Chatmaid',
+    'author=roskakori',
+    'version=%s' % __version__,
+    'patch=%s' % _FirefallVersion,
+    'url=http://forums.firefallthegame.com/community/threads/TODO/',
+    'destination=\gui\components\MainUI\Panels\R5Chat',
+    'description=Chatmaid improves the level of conversation in the /zone chat.',
+]
+
+
 def _backupPath(sourcePath):
-    backupFolder, sourceName = os.path.split(sourcePath)
+    _, sourceName = os.path.split(sourcePath)
     baseName, suffix = os.path.splitext(sourceName)
     backupName = baseName + '_backup' + suffix
-    result = os.path.join(backupFolder, backupName)
+    result = os.path.join(_buildFolder, backupName)
     return result
 
 
@@ -44,7 +74,7 @@ def _slurped(pathToRead):
         for line in fileToRead:
             result.append(line.rstrip('\n\r\t '))
     return result
-    
+
 
 def _indexOfLineWhereToInsertChatmaid(lines):
     result = 0
@@ -56,7 +86,7 @@ def _indexOfLineWhereToInsertChatmaid(lines):
 
 
 def _indexOfLineWhereToInsertSanitize(lines):
-    result = 0
+    result = None
     isInOnChatMessage = False
     for index, line in enumerate(lines):
         if not isInOnChatMessage:
@@ -67,7 +97,7 @@ def _indexOfLineWhereToInsertSanitize(lines):
                 isInOnChatMessage = False
             elif line.strip() == 'if (not args.author) then':
                 result = index
-    assert result != 0, 'R5Chat.lua must contain OnChatMessage() with author query'
+    assert result is not None, 'R5Chat.lua must contain OnChatMessage() with author query'
     return result
 
 
@@ -84,28 +114,53 @@ def _insertChatmaidLines(targetLines, targetIndex, linesToInsert):
     targetLines.insert(targetIndex, '')
 
 
-def _integrateChatmaidInR5Chat(r5ChatLuaPath):
+def _buildModifiedR5ChatLuaFile():
     chatmaidLuaPath = os.path.abspath('chatmaid.lua')
     chatmaidLines = _slurped(chatmaidLuaPath)
-    r5ChatBackupPath = _backupPath(r5ChatLuaPath)
+    r5ChatBackupPath = _backupPath(_R5ChatLuaPath)
     r5ChatLines = _slurped(r5ChatBackupPath)
     indexOfLineWhereToInsertChatmaid = _indexOfLineWhereToInsertChatmaid(r5ChatLines)
     indexOfLineWhereToInsertSanitize = _indexOfLineWhereToInsertSanitize(r5ChatLines)
     assert indexOfLineWhereToInsertChatmaid < indexOfLineWhereToInsertSanitize
     _insertChatmaidLines(r5ChatLines, indexOfLineWhereToInsertSanitize, _SanitizeLuaCode)
     _insertChatmaidLines(r5ChatLines, indexOfLineWhereToInsertChatmaid, chatmaidLines)
-    # TODO: Remove: r5ChatLuaPath = r'c:\temp\R5Chat.lua'
-    _log.info('write modified %s', r5ChatLuaPath)
-    with open(r5ChatLuaPath, 'w', encoding='utf-8') as r5ChatLuaFile:
+    _log.info('write modified %s', _modifiedR5ChatLuaPath)
+    with open(_modifiedR5ChatLuaPath, 'w', encoding='utf-8') as modifiedR5ChatLuaFile:
         for lineToWrite in r5ChatLines:
-            r5ChatLuaFile.write(lineToWrite)
-            r5ChatLuaFile.write('\n')  # automatically changed to os.linesep
-    _log.info('finished')
+            if 'enableTraceActions = true' in lineToWrite:
+                lineToWrite = lineToWrite.replace('true', 'false')
+                _log.info('  set enableTraceActions = false')
+            modifiedR5ChatLuaFile.write(lineToWrite)
+            modifiedR5ChatLuaFile.write('\n')  # automatically changed to os.linesep
+
+
+def _buildChatmaidZip():
+    melderInfoPath = os.path.join(_buildFolder, 'melder_info.ini')
+    _log.info('write melder info to %s', melderInfoPath)
+    with open(melderInfoPath, 'w', encoding='utf-8') as melderInfoFile:
+        for lineToWrite in _MelderInfoCode:
+            melderInfoFile.write(lineToWrite)
+            melderInfoFile.write('\n')
+
+    targetZipName = 'Chatmaid_v' + __version__ + '.zip'
+    targetZipPath = os.path.join(_distFolder, targetZipName)
+    _log.info('write distribution archive to %s', targetZipPath)
+    with zipfile.ZipFile(targetZipPath, 'w') as targetZipFile:
+        for pathToAdd in (_modifiedR5ChatLuaPath, melderInfoPath):
+            _log.info('  add %s', pathToAdd)
+            targetZipFile.write(pathToAdd, os.path.basename(pathToAdd))
+    melderAddonsPath = os.path.expandvars(os.path.join('${LOCALAPPDATA}', 'Melder', 'addons'))
+    melderZipPath = os.path.join(melderAddonsPath, targetZipName)
+    _log.info('copy melder addon to %s', melderZipPath)
+    shutil.copy2(targetZipPath, melderZipPath)
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    _log.info('build chatmaid v' + __version__)
+    os.makedirs(_buildFolder, exist_ok=True)
+    os.makedirs(_distFolder, exist_ok=True)
     _possiblyBuildBackup(_R5ChatLuaPath)
-    _integrateChatmaidInR5Chat(_R5ChatLuaPath)
-    
-    
+    _buildModifiedR5ChatLuaFile()
+    _buildChatmaidZip()
+    _log.info('finished')

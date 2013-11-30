@@ -1,1 +1,6 @@
+.buildpath
+.project
+*.pyc
+*.pyo
+build
 dist

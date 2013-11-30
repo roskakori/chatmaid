@@ -8,30 +8,28 @@ local enableHideNonAscii = false
 
 -- Hide certain languages?
 local enableHideFrench = true
-local enableHideGerman = false
+local enableHideGerman = true
 local enableHideRussian = true
 
--- TODO: Hide plain "thanks" messages (and variants)?
+-- Hide plain "thanks" messages (and variants)?
 local enableHideThanks = true
 
--- TODO: Hide messages containing no letters, for example a sole "/".
+-- Hide messages containing no letters, for example a sole "/".
 local enableHideSingleCharacters = true
 
 -- Remove leading, trailing and redundant whitespace?
 -- For example, " hello   world  " becomes "hello world"
 local enableCleanWhitespace = true
 
--- Reduce multiple exlemation and question marks to a single one.
--- For example "no!!!" become "no!"
+-- Reduce multiple exclamation and question marks to a single one.
+-- For example "no!!!" becomes "no!"
 local enableCleanMultiplePunctuation = true
 
 
--- TODO: How to deal with screaming in all upper case and redundant exclamation
--- marks.
+-- TODO: How to deal with screaming in all upper case?
 --
 -- "hide" hides such messages, "cleanup" makes them easier to read by changing
--- them to all lower case and replacing multiple exclamation marks with a
--- single one.
+-- them to all lower case.
 local handleScreaming = "cleanup"
 
 -- Instead of performing actions only append the proposed action to the
@@ -350,13 +348,15 @@ function sanitized(channel, utf8text)
     end
 
     -- Hide undesired languages.
-    language = GuessedLanguage(cleanedText)
-    if enableHideFrench and (language == "fr") then
-        return nil, "hide french"
-    elseif enableHideGerman and (language == "de") then
-        return nil, "hide german"
-    elseif enableHideRussian and (language == "ru") then
-        return nil, "hide russian"
+    if (channel == "zone") or (channel == "local") then
+        language = GuessedLanguage(cleanedText)
+        if enableHideFrench and (language == "fr") then
+            return nil, "hide french"
+        elseif enableHideGerman and (language == "de") then
+            return nil, "hide german"
+        elseif enableHideRussian and (language == "ru") then
+            return nil, "hide russian"
+        end
     end
 
     -- Hide single characters.
