@@ -6,10 +6,10 @@ Chatmaid is an addon for the MMOFPS Firefall (available from
 in the `/zone` chat.
 
 Chatmaid wipes the chat clean from "thank you" messages that should have gone
-to `local` or `/whisper`, brings out the trash from non English messages that
-should have gone to `/army` or `/squad`, dusts of redundant exclamation marks
-from overreacting players, polishes white space and tidies up a few other
-things in order to make your stay in `/zone` a little more cozy.
+to `/local` or `/whisper`, brings out the garbage from non English messages
+that should have gone to `/army` or `/squad`, dusts of redundant exclamation
+marks from overreacting players, polishes white space and tidies up a few
+other things in order to make your stay in `/zone` a little more cozy.
 
 Nevertheless it leaves your room untouched so you can still party all you want
 with your mates in `/army` and `/squad`.
@@ -18,10 +18,10 @@ with your mates in `/army` and `/squad`.
 Features
 --------
 
-* Hides all Russian messages and also some German and French ones (provided
-  they use non ASCII characters).
 * Hides thanks (typically for revives) that would better be sent using
   `/local` or `/whisper`.
+* Hides all Russian messages and also some German and French ones (provided
+  they use non ASCII characters).
 * Hides single character messages like `/` (typically caused by slips on the
   keyboard); common one letter abbreviations such as `y` for yes and `k` for
   ok are preserved.

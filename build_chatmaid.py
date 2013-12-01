@@ -11,10 +11,14 @@ import os
 import shutil
 import zipfile
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 # TODO: Obtain current Firefall patch number programatically.
 _FirefallVersion='0.7.1727'
+
+# Numeric ID from the attachments link in the Firefall forums; used by Melder button.
+# See http://forums.firefallthegame.com/community/threads/mod-chatmaid-improve-conversations-in-zone-chat.2868821/.
+_AttachmentId=0
 
 _buildFolder = os.path.abspath('build')
 _distFolder = os.path.abspath('dist')
@@ -44,7 +48,7 @@ _MelderInfoCode = [
     'author=roskakori',
     'version=%s' % __version__,
     'patch=%s' % _FirefallVersion,
-    'url=http://forums.firefallthegame.com/community/threads/TODO/',
+    'url=http://forums.firefallthegame.com/community/threads/addon-chatmaid-improve-conversations-in-zone-chat.2868821/',
     'destination=\gui\components\MainUI\Panels\R5Chat',
     'description=Chatmaid improves the level of conversation in the /zone chat.',
 ]
@@ -155,6 +159,13 @@ def _buildChatmaidZip():
     shutil.copy2(targetZipPath, melderZipPath)
 
 
+def _logMelderButton():
+    _log.info('''bbCode for Melder button:
+[center][url=http://astrekassociation.com/melder.php?id=%d][img]http://bit.ly/MelderButton[/img][/url]
+[size=1][color=#161C1C][melder_info]version=%s;patch=%s;dlurl=%d[/melder_info][/color][/size][/center]''',
+        _AttachmentId, __version__, _FirefallVersion, _AttachmentId)
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     _log.info('build chatmaid v' + __version__)
@@ -163,4 +174,5 @@ if __name__ == '__main__':
     _possiblyBuildBackup(_R5ChatLuaPath)
     _buildModifiedR5ChatLuaFile()
     _buildChatmaidZip()
+    _logMelderButton()
     _log.info('finished')
