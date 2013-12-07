@@ -47,15 +47,16 @@ end
 
 -- A string describing item (somewhat similar to Python's repr()).
 function repr(item)
+    local result
     if item == nil then
         result = "nil"
     else
-        itemType = type(item)
+        local itemType = type(item)
         if type(item) == "string" then
             result = '"'
             for i = 1, item:len() do
-                c = item:sub(i, i)
-                code = c:byte(1)
+                local c = item:sub(i, i)
+                local code = c:byte(1)
                 -- TODO: Remove: print("  "..code)
                 if c == "\n" then
                     c = "\\n"
@@ -85,7 +86,7 @@ end
 -- Bitwise and operator for 8 bit. Lua 5.1 does not yet support bit32.band().
 function bit8and(a, b)
     -- TODO: Remove: print("a="..a..", b="..b)
-    result = 0
+    local result = 0
     for i = 0, 7 do
         if (a % 2)  + (b % 2) == 2 then
             result = result + 2 ^ i
@@ -100,6 +101,7 @@ end
 local VALID_SINGLE_CHARACTERS = Set{
     "k", -- ok
     "n", -- no
+    "r", -- ready
     "y", -- yes
 }
 
@@ -286,7 +288,7 @@ end
 -- Similar to text but without leading, trailing and redundant whitespace.
 function cleanedWhitespace(text)
     -- Reduce multiple while space to single blank.
-    result = text:gsub("%s+", " ")
+    local result = text:gsub("%s+", " ")
     -- Remove leading and trailing space.
     result = trimmed(result)
 
@@ -329,11 +331,11 @@ end
 -- hidden, it is nil. If no actions have been performed, they are nil.
 function sanitized(channel, utf8text)
     -- TODO: Hide non ASCII.
-    actions = ""
-    cleanedText = utf8text
+    local actions = ""
+    local cleanedText = utf8text
 
     -- Remove leading and trailing whitespace.
-    previousText = cleanedText
+    local previousText = cleanedText
     cleanedText = cleanedWhitespace(cleanedText)
     if cleanedText:len() == 0 then
         return nil, "hide empty"
@@ -349,7 +351,7 @@ function sanitized(channel, utf8text)
 
     -- Hide undesired languages.
     if (channel == "zone") or (channel == "local") then
-        language = GuessedLanguage(cleanedText)
+        local language = GuessedLanguage(cleanedText)
         if enableHideFrench and (language == "fr") then
             return nil, "hide french"
         elseif enableHideGerman and (language == "de") then
@@ -361,8 +363,8 @@ function sanitized(channel, utf8text)
 
     -- Hide single characters.
     if enableHideSingleCharacters then
-        isSingleCharacter = (cleanedText:len() == 1)
-        isDigit = (cleanedText >= "0") and (cleanedText <= "9")
+        local isSingleCharacter = (cleanedText:len() == 1)
+        local isDigit = (cleanedText >= "0") and (cleanedText <= "9")
         if isSingleCharacter and not isDigit and (VALID_SINGLE_CHARACTERS[cleanedText] == nil) then
             return nil, "hide single character"
         end
