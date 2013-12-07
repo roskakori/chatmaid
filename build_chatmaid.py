@@ -14,7 +14,7 @@ import zipfile
 __version__ = '0.2'
 
 # TODO: Obtain current Firefall patch number programatically.
-_FirefallVersion='0.7.1727'
+_FirefallVersion='0.7.1729'
 
 # Numeric ID from the attachments link in the Firefall forums; used by Melder button.
 # See http://forums.firefallthegame.com/community/threads/mod-chatmaid-improve-conversations-in-zone-chat.2868821/.
@@ -166,6 +166,29 @@ def _logMelderButton():
         _AttachmentId, __version__, _FirefallVersion, _AttachmentId)
 
 
+def _permutations(pools):
+    poolCount = len(pools)
+    indices = [0] * poolCount
+    maxIndices = [len(pools[i]) - 1 for i in range(len(pools))]
+    poolIndex = 0
+    while (poolIndex >= 0):
+        yield [pools[i][indices[i]] for i in range(poolCount)]
+        poolIndex = poolCount - 1
+        hasAdvanced = False
+        while (poolIndex >= 0) and not hasAdvanced:
+            if indices[poolIndex] == maxIndices[poolIndex]:
+                indices[poolIndex] = 0
+                poolIndex -= 1
+            else:
+                indices[poolIndex] += 1
+                hasAdvanced = True
+    
+
+def _logLuaSmilies():
+    smilies = ['"' + ''.join(smilie) + '"' for smilie in _permutations((':;8BX', '-^o', ')(PD'))]
+    _log.info('lua code for smilies:\nlocal _SMILIES = Set{' + ', '.join(smilies) + '}')
+    
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     _log.info('build chatmaid v' + __version__)
@@ -175,4 +198,5 @@ if __name__ == '__main__':
     _buildModifiedR5ChatLuaFile()
     _buildChatmaidZip()
     _logMelderButton()
+    _logLuaSmilies()
     _log.info('finished')
