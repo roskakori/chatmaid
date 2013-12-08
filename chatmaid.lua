@@ -85,7 +85,6 @@ end
 
 -- Bitwise and operator for 8 bit. Lua 5.1 does not yet support bit32.band().
 function bit8and(a, b)
-    -- TODO: Remove: print("a="..a..", b="..b)
     local result = 0
     for i = 0, 7 do
         if (a % 2)  + (b % 2) == 2 then
@@ -93,7 +92,6 @@ function bit8and(a, b)
         end
         a = math.floor(a / 2)
         b = math.floor(b / 2)
-        -- TODO: Remove: print("  result="..result..", a="..a..", b="..b)
     end
     return result
 end
@@ -103,6 +101,7 @@ local VALID_SINGLE_CHARACTERS = Set{
     "n", -- no
     "r", -- ready
     "y", -- yes
+    "?", -- confused
 }
 
 -- Unicodes for to detect certain languages.
