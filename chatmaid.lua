@@ -144,6 +144,7 @@ local THANKS = Set{
     "thx",
     "thx u",
     "thx you",
+    "tnx",
     "txh", -- common typo
     "ty",
 }
