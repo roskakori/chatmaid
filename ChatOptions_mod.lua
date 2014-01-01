@@ -3,12 +3,12 @@
 @mod "add GUI"
 @after "for i, tab in ipairs(IO_Settings.Tabs) do"
 @after "end"
-		InterfaceOptions.StartGroup({id="CHATMAID_ENABLED", label="Chatmaid", checkbox=IO_Settings.General.ChatmaidEnabled, default=true})
-		InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_FRENCH", label="Hide French", tooltip="Hide (some) chat messages in French language.", default=IO_Settings.General.ChatmaidHideFrench});
-		InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_GERMAN", label="Hide German", tooltip="Hide (some) chat messages in German language.", default=IO_Settings.General.ChatmaidHideGerman});
-		InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_RUSSIAN", label="Hide Russian", tooltip="Hide chat messages in Russian language.", default=IO_Settings.General.ChatmaidHideRussian});
-		InterfaceOptions.AddCheckBox({id="CHATMAID_EXPLAIN_ACTIONS", label="Explain actions", tooltip="Explain actions that would have been performed on chat messages (if any).", default=IO_Settings.General.ChatmaidExplainActions});
-		InterfaceOptions.StopGroup()
+InterfaceOptions.StartGroup({id="CHATMAID_ENABLED", label="Chatmaid", checkbox=IO_Settings.General.ChatmaidEnabled, default=true})
+InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_FRENCH", label="Hide French", tooltip="Hide (some) chat messages in French language.", default=IO_Settings.General.ChatmaidHideFrench});
+InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_GERMAN", label="Hide German", tooltip="Hide (some) chat messages in German language.", default=IO_Settings.General.ChatmaidHideGerman});
+InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_RUSSIAN", label="Hide Russian", tooltip="Hide chat messages in Russian language.", default=IO_Settings.General.ChatmaidHideRussian});
+InterfaceOptions.AddCheckBox({id="CHATMAID_EXPLAIN_ACTIONS", label="Explain actions", tooltip="Explain actions that would have been performed on chat messages (if any).", default=IO_Settings.General.ChatmaidExplainActions});
+InterfaceOptions.StopGroup()
 
 @mod "default settings"
 @after "\tGeneral = {"
