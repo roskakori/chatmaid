@@ -20,7 +20,7 @@ _FirefallVersion='0.7.1730'
 
 # Numeric ID from the attachments link in the Firefall forums; used by Melder button.
 # See http://forums.firefallthegame.com/community/threads/mod-chatmaid-improve-conversations-in-zone-chat.2868821/.
-_AttachmentId=0
+_AttachmentId=1351421
 
 _buildFolder = os.path.abspath('build')
 _distFolder = os.path.abspath('dist')

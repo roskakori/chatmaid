@@ -32,8 +32,13 @@ Features
 Installation
 ------------
 
-Chatmaid can be installed using Melder available from
-<http://forums.firefallthegame.com/community/threads/addon-manager-melder.52327/>.
+Chatmaid can be installed using
+[Melder](http://forums.firefallthegame.com/community/threads/addon-manager-melder.52327/)
+by visiting <http://astrekassociation.com/melder.php?id=1255421>.
+
+For manual installation, visit the
+[Chatmaid thread](http://forums.firefallthegame.com/community/threads/2868821/)
+in the offical Firefall forums.
 
 The modified files are stored in 
 `C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat`.
@@ -42,28 +47,42 @@ The modified files are stored in
 Configuration
 -------------
 
-Currently there is no GUI for configuration. Open the source code located in
-`C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat\R5Chat.lua`
-in a text editor (for example Notepad) and take a look at the comments and
-variables in the beginning.
+Chatmaid can be configured using the options dialog in game and navigating to
+Interface > Chat. 
 
-For example, to see German messages again, set
-```
-local enableHideGerman = false
-```
+![Screenshot: Chatmaid Options](chatmaid_options.png)
 
-Instead of chatmaid actually hiding and cleaning up messages you can enable a
-test mode that only adds a remark to chat messages instead of taking action:
-```
-local enableTraceActions = true
-```
+"Hide French" and "Hide German" hides messages that contain non ASCII
+characters common to the French or German language. For instance, the German
+message "So ein Blödsinn!" is hidden because it contains the German Umlaut
+"ö". However, the also German message "So ein Unsinn!" is preserved because it
+uses only ASCII.
+
+"Hide Russian" hides messages that contain Cyrillic letters.
+
+"Explain actions" prevents Chatmaid from actually hiding or cleaning up
+messages. Instead, Chatmaid would appends a remark to messages it would have
+acted upon. For example "ty" becomes "ty [hide thanks]".
 
 
 Limitations
 -----------
-
 * Currently experimental (my first Firefall addon and Lua program).
 * Dispite chatmaid's best effort some noise remains in the zone chat.
+
+
+Version history
+---------------
+
+Version 0.2, 2014-01-01
+* Added configuration to Options > Interface > Chat.
+* Added support for updating in Melder. Users of version 0.1 have to upgrade
+  to 0.2 manually though.
+* Added "tnx" as synonym for "thanks".
+* Added "?" as preserved single letter message to express confusion.
+
+Version 0.1, 2013-12-01
+* Initial public release.
 
 
 License
@@ -71,7 +90,7 @@ License
 
 Chatmaid is distributed under the MIT License.
 
-Copyright (c) 2013 Thomas Aglassinger
+Copyright (c) 2013-14 Thomas Aglassinger
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
