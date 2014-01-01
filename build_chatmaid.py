@@ -11,10 +11,12 @@ import os
 import shutil
 import zipfile
 
+import modtext
+
 __version__ = '0.2'
 
 # TODO: Obtain current Firefall patch number programatically.
-_FirefallVersion='0.7.1729'
+_FirefallVersion='0.7.1730'
 
 # Numeric ID from the attachments link in the Firefall forums; used by Melder button.
 # See http://forums.firefallthegame.com/community/threads/mod-chatmaid-improve-conversations-in-zone-chat.2868821/.
@@ -23,8 +25,10 @@ _AttachmentId=0
 _buildFolder = os.path.abspath('build')
 _distFolder = os.path.abspath('dist')
 
+_ChatOptionsLuaPath = r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat\ChatOptions.lua'
 _R5ChatLuaPath = r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat\R5Chat.lua'
 _modifiedR5ChatLuaPath = os.path.join(_buildFolder, 'R5Chat.lua')
+_modifiedChatOptionsLuaPath = os.path.join(_buildFolder, 'ChatOptions.lua')
 
 _log = logging.getLogger('chatmaid')
 
@@ -50,7 +54,7 @@ _MelderInfoCode = [
     'patch=%s' % _FirefallVersion,
     'url=http://forums.firefallthegame.com/community/threads/addon-chatmaid-improve-conversations-in-zone-chat.2868821/',
     'destination=\gui\components\MainUI\Panels\R5Chat',
-    'description=Chatmaid improves the level of conversation in the /zone chat.',
+    'description=Chatmaid hides and cleans up unwanted chat messages.',
 ]
 
 
@@ -118,25 +122,11 @@ def _insertChatmaidLines(targetLines, targetIndex, linesToInsert):
     targetLines.insert(targetIndex, '')
 
 
-def _buildModifiedR5ChatLuaFile():
-    chatmaidLuaPath = os.path.abspath('chatmaid.lua')
-    chatmaidLines = _slurped(chatmaidLuaPath)
-    r5ChatBackupPath = _backupPath(_R5ChatLuaPath)
-    r5ChatLines = _slurped(r5ChatBackupPath)
-    indexOfLineWhereToInsertChatmaid = _indexOfLineWhereToInsertChatmaid(r5ChatLines)
-    indexOfLineWhereToInsertSanitize = _indexOfLineWhereToInsertSanitize(r5ChatLines)
-    assert indexOfLineWhereToInsertChatmaid < indexOfLineWhereToInsertSanitize
-    _insertChatmaidLines(r5ChatLines, indexOfLineWhereToInsertSanitize, _SanitizeLuaCode)
-    _insertChatmaidLines(r5ChatLines, indexOfLineWhereToInsertChatmaid, chatmaidLines)
-    _log.info('write modified %s', _modifiedR5ChatLuaPath)
-    with open(_modifiedR5ChatLuaPath, 'w', encoding='utf-8') as modifiedR5ChatLuaFile:
-        for lineToWrite in r5ChatLines:
-            if 'enableTraceActions = true' in lineToWrite:
-                lineToWrite = lineToWrite.replace('true', 'false')
-                _log.info('  set enableTraceActions = false')
-            modifiedR5ChatLuaFile.write(lineToWrite)
-            modifiedR5ChatLuaFile.write('\n')  # automatically changed to os.linesep
-
+def _buildModifiedLuaFiles():
+    chatOptionsRules = modtext.ModRules(os.path.abspath('ChatOptions_mod.lua'))
+    chatOptionsRules.apply(_backupPath(_ChatOptionsLuaPath), _modifiedChatOptionsLuaPath)
+    r5ChatRules = modtext.ModRules(os.path.abspath('R5Chat_mod.lua'))
+    r5ChatRules.apply(_backupPath(_R5ChatLuaPath), _modifiedR5ChatLuaPath)
 
 def _buildChatmaidZip():
     melderInfoPath = os.path.join(_buildFolder, 'melder_info.ini')
@@ -150,9 +140,10 @@ def _buildChatmaidZip():
     targetZipPath = os.path.join(_distFolder, targetZipName)
     _log.info('write distribution archive to %s', targetZipPath)
     with zipfile.ZipFile(targetZipPath, 'w') as targetZipFile:
-        for pathToAdd in (_modifiedR5ChatLuaPath, melderInfoPath):
+        for pathToAdd in (_modifiedChatOptionsLuaPath, _modifiedR5ChatLuaPath, melderInfoPath):
             _log.info('  add %s', pathToAdd)
             targetZipFile.write(pathToAdd, os.path.basename(pathToAdd))
+
     melderAddonsPath = os.path.expandvars(os.path.join('${LOCALAPPDATA}', 'Melder', 'addons'))
     melderZipPath = os.path.join(melderAddonsPath, targetZipName)
     _log.info('copy melder addon to %s', melderZipPath)
@@ -194,8 +185,9 @@ if __name__ == '__main__':
     _log.info('build chatmaid v' + __version__)
     os.makedirs(_buildFolder, exist_ok=True)
     os.makedirs(_distFolder, exist_ok=True)
+    _possiblyBuildBackup(_ChatOptionsLuaPath)
     _possiblyBuildBackup(_R5ChatLuaPath)
-    _buildModifiedR5ChatLuaFile()
+    _buildModifiedLuaFiles()
     _buildChatmaidZip()
     _logMelderButton()
     _logLuaSmilies()

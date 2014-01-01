@@ -1,5 +1,6 @@
 '''Mod text file according to a mod description.'''
 import ast
+import fnmatch
 import logging
 import os
 import tokenize
@@ -69,16 +70,38 @@ class BaseFinder(object):
 
         self._searchTerm = None
         self._isGlob = False
+        self._isLast = False
+        self._isContains = False
         for token in tokens[2:]:
-            if token.type == tokenize.STRING:
+            if token.type == tokenize.NAME:
+                if token.string == 'contains':
+                    if self._isContains:
+                        raise ModError(token.start, 'duplicate "contains" must be removed')
+                    self._isGlob = True
+                elif token.string == 'glob':
+                    if self._isGlob:
+                        raise ModError(token.start, 'duplicate "glob" must be removed')
+                    self._isGlob = True
+                elif token.string == 'last':
+                    if self._isLast:
+                        raise ModError(token.start, 'duplicate "last" must be removed')
+                    self._isLast = True
+                else:
+                    raise ModError(token.start, 'cannot process unknown keyword "%s"' % token.string)
+            elif token.type == tokenize.STRING:
                 if self._searchTerm is None:
                     self._searchTerm = _unquotedString(token.string)
+                    if self._searchTerm.rstrip() != self._searchTerm:
+                        raise ModError(token.start,
+                            'trailing white space in search term must be removed because trailing white space in input is automatically discarded and consequently can never be found')
                 else:
                     raise ModError(token.start, 'duplicate search term must be removed')
             elif token.type != tokenize.ENDMARKER:
                 raise ModError(token.start, 'cannot process unknown keyword "%s"' % token.string)
         if self._searchTerm is None:
             raise ModError(tokens[0].start, 'search term must be specified')
+        if self._isContains and self._isGlob:
+            self._searchTerm = '*' + self._searchTerm + '*'
 
     def foundAt(self, lines, startLineNumber=0):
         assert lines is not None
@@ -87,26 +110,23 @@ class BaseFinder(object):
         result = None
         lineIndex = startLineNumber
         lineCount = len(lines)
-        _log.info('  find starting at %d: %r', lineIndex, self._searchTerm)
-        while (result is None) and (lineIndex < lineCount):
+        _log.info('  find starting at %d: %r', lineIndex + 1, self._searchTerm)
+        while (lineIndex < lineCount) and ((result is None) or self._isLast):
             lineToExamine = lines[lineIndex]
-            _log.debug('    examine%4d: %r', lineIndex, lineToExamine)
-            found = self._searchTerm in lineToExamine
-            # TODO: Take keyword "glob" into account.
+            _log.debug('    examine %d: %r', lineIndex + 1, lineToExamine)
+            if self._isGlob:
+                found = fnmatch.fnmatch(lineToExamine, self._searchTerm)
+            elif self._isContains:
+                found = self._searchTerm in lineToExamine
+            else:
+                found = (self._searchTerm == lineToExamine)
             if found:
                 result = lineIndex
-            else:
-                lineIndex += 1
-        if result is not None:
-            _log.info('    found in line %d: %r', result, self._searchTerm)
-        else:
+            lineIndex += 1
+        if result is None:
             raise ModError(startLineNumber, 'cannot find search term: %s' % self._searchTerm)
+        _log.info('    found in line %d: %r', result + 1, self._searchTerm)
         return result
-
-
-class BeforeFinder(BaseFinder):
-    def __init__(self, tokens):
-        super().__init__('before', tokens)
 
 
 class AfterFinder(BaseFinder):
@@ -114,7 +134,12 @@ class AfterFinder(BaseFinder):
         super().__init__('after', tokens)
 
     def foundAt(self, lines, startLineNumber=0):
-        return super().foundAt(lines, startLineNumber) - 1
+        return super().foundAt(lines, startLineNumber) + 1
+
+
+class BeforeFinder(BaseFinder):
+    def __init__(self, tokens):
+        super().__init__('before', tokens)
 
 
 class ModOptions(object):
@@ -178,7 +203,7 @@ class Mod(object):
         if self._textLines == []:
             raise ModError(modLineNumber, '@mod must be followed by text lines or @include: %s' % self.description)
 
-    def _includeTextLines(tokens):
+    def _includeTextLines(self, tokens):
         assert (tokens[0].type, tokens[0].string) == (tokenize.OP, '@')
         assert (tokens[1].type, tokens[1].string) == (tokenize.NAME, 'include')
         pathToIncludeToken = tokens[2]
@@ -186,13 +211,13 @@ class Mod(object):
             raise ModError(modLineNumber, 'after @include a string containing the path to include must be specified (found: %r)' % pathToIncludeToken.string)
         if tokens[3].type != tokenize.ENDMARKER:
             raise ModError(modLineNumber, 'unexpected text after @include "..." must be removed')
-        pathToInclude = unquotedString(pathToIncludeToken.string)
+        pathToInclude = _unquotedString(pathToIncludeToken.string)
         _log.info('  read include "%s"', pathToInclude)
         # TODO: Make encoding an option.
         with open(pathToInclude, 'r', encoding='utf-8') as includeFile:
-            for line in includeFile:
+            for lineNumber, line in enumerate(includeFile):
                 line = _cleanedLine(line)
-                self._textLines.append(line)
+                self._textLines.append((lineNumber, line))
         
         
     def modded(self, lines):
@@ -210,52 +235,79 @@ class ModRules(object):
         AT_HEADER = 'head'
         AT_MOD = 'mod '
         AT_TEXT = 'text'
-        
+
         self.mods = []
         self._modLines = []
         self._textLines = []
         state = AT_HEADER
-        for lineNumber, line in enumerate(modFile):
-            line = _cleanedLine(line)
-            ignored = False
-            lineNumberAndLine = (lineNumber, line)
-            if state == AT_HEADER:
-                if (line == '') or line.startswith('#') or line.startswith('--') or line.startswith('//'):
-                    ignored = True
-                else:
-                    state = AT_TEXT
-            if state == AT_TEXT:
-                if line.startswith('@mod'):
-                    self._possiblyAppendMod()
-                    self._modLines.append(lineNumberAndLine)
-                    state = AT_MOD
-                elif self._modLines != []:
-                    self._textLines.append(lineNumberAndLine)
-                else:
-                    raise ModError(lineNumber, '@mod must occur before text line: %r' % line)
-            elif state == AT_MOD:
-                if line.startswith('@'):
-                    self._modLines.append(lineNumberAndLine)
-                else:
-                    self._textLines.append(lineNumberAndLine)
-                    state = AT_TEXT
-            _log.debug('%3d:%s - %s', lineNumber, state, line)
+        if isinstance(readable, str):
+            readable = open(readable, 'r', encoding='utf-8')
+            isClosable = True
+        else:
+            isClosable = True
+        try:
+            for lineNumber, line in enumerate(readable):
+                line = _cleanedLine(line)
+                ignored = False
+                lineNumberAndLine = (lineNumber, line)
+                if state == AT_HEADER:
+                    if (line == '') or line.startswith('#') or line.startswith('--') or line.startswith('//'):
+                        ignored = True
+                    else:
+                        state = AT_TEXT
+                if state == AT_TEXT:
+                    if line.startswith('@mod'):
+                        self._possiblyAppendMod()
+                        self._modLines.append(lineNumberAndLine)
+                        state = AT_MOD
+                    elif self._modLines != []:
+                        self._textLines.append(lineNumberAndLine)
+                    else:
+                        raise ModError(lineNumber, '@mod must occur before text line: %r' % line)
+                elif state == AT_MOD:
+                    if line.startswith('@'):
+                        self._modLines.append(lineNumberAndLine)
+                    else:
+                        self._textLines.append(lineNumberAndLine)
+                        state = AT_TEXT
+                _log.debug('%3d:%s - %s', lineNumber, state, line)
+        finally:
+            if isClosable:
+                readable.close()
         self._possiblyAppendMod()
         self._modLines = None
         self._textLines = None
 
     def _possiblyAppendMod(self):
         if self._modLines != []:
+            # If the last text line is empty, remove it.
+            if (self._textLines != []) and (self._textLines[-1] == ''):
+                self._textLines = self._textLines[:-1]
+
             self.mods.append(Mod(self._modLines, self._textLines))
             self._modLines = []
             self._textLines = []
         else:
             assert self._textLines == []
 
+    def _lineCommentPrefix(self, path):
+        assert path is not None
+        suffix = os.path.splitext(path)[1]
+        suffix = suffix if not suffix.startswith('.') else suffix[1:]
+        if suffix in ('c', 'cc', 'cpp', 'cs', 'cxx', 'c++', 'java', 'js', 'm'):
+            result = '//'
+        elif suffix in ('lua', 'sql'):
+            result = '--'
+        elif suffix in ('cfg', 'ini', 'py', 'sh'):
+            result = '#'
+        else:
+            result = None
+        return result
 
     def apply(self, sourcePath, targetPath):
         assert sourcePath is not None
         assert targetPath is not None
+
         # TODO: Take encoding option into account.
         _log.info('read source "%s"', sourcePath)
         with open(sourcePath, 'r', encoding='utf-8') as sourceFile:
@@ -276,6 +328,10 @@ class ModRules(object):
                     existingMod.description, mod.description, sourceLines[lineNumberToInsertAt]))
 
         _log.info('write modfied target "%s"', targetPath)
+        lineCommentPrefix = self._lineCommentPrefix(targetPath)
+        if lineCommentPrefix is not None:
+            _log.info('  add mod comments using "%s"', lineCommentPrefix)
+
         with open(targetPath, 'w', encoding='utf-8') as targetFile:
             for lineNumberToWrite, lineToWrite in enumerate(sourceLines):
                 modAndModdedLines = lineNumberToModdedLinesMap.get(lineNumberToWrite)
@@ -283,10 +339,15 @@ class ModRules(object):
                     mod, moddedLines = modAndModdedLines
                     _log.info('  insert %d modded lines at %d for: %s',
                         len(moddedLines), lineNumberToWrite + 1, mod.description)
+                    if lineCommentPrefix is not None:
+                        targetFile.write('%s mod begin: %s\n' % (lineCommentPrefix, mod.description))
                     for moddedLocationAndLine in moddedLines:
+                        assert len(moddedLocationAndLine) == 2, 'moddedLocationAndLine=%r' % moddedLocationAndLine
                         _, moddedLine = moddedLocationAndLine
                         targetFile.write(moddedLine)
                         targetFile.write('\n')
+                    if lineCommentPrefix is not None:
+                        targetFile.write('%s mod end: %s\n' % (lineCommentPrefix, mod.description))
                 targetFile.write(lineToWrite)
                 targetFile.write('\n')
         _log.info('  wrote %d lines', len(sourceLines))
@@ -294,17 +355,20 @@ class ModRules(object):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+
     modPath = r'C:\Users\teflonlove\workspace\chatmaid\ChatOptions_mod.lua'
     sourcePath = r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat\ChatOptions.lua'
     targetPath = r'C:\temp\ChatOptions.lua'
-    # r'C:\Users\teflonlove\workspace\chatmaid\R5Chat_mod.lua'
+
+#    modPath = r'C:\Users\teflonlove\workspace\chatmaid\R5Chat_mod.lua'
+#    sourcePath = r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat\R5Chat.lua'
+#    targetPath = r'C:\temp\R5Chat.lua'
+
     _log.info('read mods from "%s"', modPath)
-    with open(modPath, 'r', encoding='utf-8') as modFile:
-        mods = []
-        modLines = None
-        isInOptions = True
-        rules = ModRules(modFile)
-        rules.apply(sourcePath, targetPath)
+#    with open(modPath, 'r', encoding='utf-8') as modFile:
+#        rules = ModRules(modFile)
+    rules = ModRules(modPath)
+    rules.apply(sourcePath, targetPath)
 
 ##        def appendMod(lineNumber, linesToAppend):
 ##            assert linesToAppend != []
