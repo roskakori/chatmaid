@@ -304,7 +304,6 @@ end
 function GuessedLanguage(utf8text)
     -- A (cursory) guess for the language in which utf8text is written.
     local result = nil
-    -- TODO: print("GuessedLanguage("..utf8text..")")
     local codes = unicodes(utf8text)
     local codeIndex = 1
     while (codeIndex <= #codes) and (result == nil) do
@@ -315,10 +314,12 @@ function GuessedLanguage(utf8text)
             result = "fr"
         elseif GERMAN_UNICODES[code] ~= nil then
             result = "de"
+        elseif code >= 128 then
+            -- Unknown, non english language.
+            result = "xx"
         else
             codeIndex = codeIndex + 1
         end
-        -- TODO: Remove: print("  "..(result and result or "nil").." <-- "..c)
     end
     if result == nil then
       result = "en"

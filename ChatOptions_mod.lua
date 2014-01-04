@@ -4,6 +4,7 @@
 @after "for i, tab in ipairs(IO_Settings.Tabs) do"
 @after "end"
 InterfaceOptions.StartGroup({id="CHATMAID_ENABLED", label="Chatmaid", checkbox=IO_Settings.General.ChatmaidEnabled, default=true})
+InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_NON_ASCII", label="Hide non ASCII", tooltip="Hide chat messages containin non ASCII characters.", default=IO_Settings.General.ChatmaidHideNonAscii});
 InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_FRENCH", label="Hide French", tooltip="Hide (some) chat messages in French language.", default=IO_Settings.General.ChatmaidHideFrench});
 InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_GERMAN", label="Hide German", tooltip="Hide (some) chat messages in German language.", default=IO_Settings.General.ChatmaidHideGerman});
 InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_RUSSIAN", label="Hide Russian", tooltip="Hide chat messages in Russian language.", default=IO_Settings.General.ChatmaidHideRussian});
@@ -17,6 +18,7 @@ InterfaceOptions.StopGroup()
 		ChatmaidExplainActions = true,
 		ChatmaidHideFrench = false,
 		ChatmaidHideGerman = false,
+		ChatmaidHideNonAscii = false,
 		ChatmaidHideRussian = true,
 
 @mod "handle settings events"
@@ -30,5 +32,7 @@ InterfaceOptions.StopGroup()
 		IO_Settings.General.ChatmaidHideFrench = val
 	elseif id == "CHATMAID_HIDE_GERMAN" then
 		IO_Settings.General.ChatmaidHideGerman = val
+	elseif id == "CHATMAID_HIDE_NON_ASCII" then
+		IO_Settings.General.ChatmaidHideNonAscii = val
 	elseif id == "CHATMAID_HIDE_RUSSIAN" then
 		IO_Settings.General.ChatmaidHideRussian = val

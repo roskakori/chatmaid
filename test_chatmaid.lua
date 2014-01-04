@@ -51,6 +51,7 @@ assert(GuessedLanguage("tea") == "en")
 assert(GuessedLanguage("grüner Veltliner") == "de")
 assert(GuessedLanguage("водка") == "ru")
 assert(GuessedLanguage("Sémillon") == "fr")
+assert(GuessedLanguage(string.char(128)) == "xx")
 
 print("test sanitized")
 assertSanitized("zone", "hello", "hello", nil)
