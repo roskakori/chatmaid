@@ -1,4 +1,4 @@
-'''Build R5Chat.lua that integrates chatmaid.lua'''
+"""Build R5Chat.lua that integrates chatmaid.lua"""
 
 # Ensure Python is current enough.
 import sys
@@ -9,53 +9,35 @@ import errno
 import logging
 import os
 import shutil
+import string
 import zipfile
 
 import modtext
 
-__version__ = '0.2'
+__version__ = '0.3'
 
-# TODO: Obtain current Firefall patch number programatically.
-_FirefallVersion='0.7.1730'
+# TODO: Obtain current Firefall patch number programmatically.
+_FirefallVersion = '0.7.1735'
 
 # Numeric ID from the attachments link in the Firefall forums; used by Melder button.
 # See http://forums.firefallthegame.com/community/threads/mod-chatmaid-improve-conversations-in-zone-chat.2868821/.
-_AttachmentId=1351421
+_AttachmentId = 1351421
 
+_MelderSymbols = {
+    'AttachmentId': _AttachmentId,
+    'ChatmaidVersion': __version__,
+    'FirefallVersion': _FirefallVersion,
+}
 _buildFolder = os.path.abspath('build')
 _distFolder = os.path.abspath('dist')
 
-_ChatOptionsLuaPath = r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat\ChatOptions.lua'
+_ChatOptionsLuaPath = \
+    r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat\ChatOptions.lua'
 _R5ChatLuaPath = r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat\R5Chat.lua'
 _modifiedR5ChatLuaPath = os.path.join(_buildFolder, 'R5Chat.lua')
 _modifiedChatOptionsLuaPath = os.path.join(_buildFolder, 'ChatOptions.lua')
 
-_log = logging.getLogger('chatmaid')
-
-# Code to be injected in R5Chat.lua to call chatmaid's sanitize().
-_SanitizeLuaCode = [
-    '\ttext, action = sanitized(args.channel, args.text)',
-    '\tif action ~= nil then',
-    '\t\tif enableTraceActions then',
-    '\t\t\targs.text = args.text.." ["..action.."]"',
-    '\t\telseif not text then',
-    '\t\t\treturn nil',
-    '\t\telse',
-    '\t\t\targs.text = text',
-    '\t\tend',
-    '\tend',
-]
-
-# Code for melder_info.ini.
-_MelderInfoCode = [
-    'title=Chatmaid',
-    'author=roskakori',
-    'version=%s' % __version__,
-    'patch=%s' % _FirefallVersion,
-    'url=http://forums.firefallthegame.com/community/threads/addon-chatmaid-improve-conversations-in-zone-chat.2868821/',
-    'destination=\gui\components\MainUI\Panels\R5Chat',
-    'description=Chatmaid hides and cleans up unwanted chat messages.',
-]
+_log = logging.getLogger('build_chatmaid')
 
 
 def _backupPath(sourcePath):
@@ -84,57 +66,24 @@ def _slurped(pathToRead):
     return result
 
 
-def _indexOfLineWhereToInsertChatmaid(lines):
-    result = 0
-    for index, line in enumerate(lines):
-        if line.startswith('require'):
-            result = index + 1
-    assert result != 0, 'R5Chat.lua must contain lines starting with "require"'
-    return result
-
-
-def _indexOfLineWhereToInsertSanitize(lines):
-    result = None
-    isInOnChatMessage = False
-    for index, line in enumerate(lines):
-        if not isInOnChatMessage:
-            if line.startswith('function OnChatMessage'):
-               isInOnChatMessage = True
-        else:
-            if line.rstrip() == 'end':
-                isInOnChatMessage = False
-            elif line.strip() == 'if (not args.author) then':
-                result = index
-    assert result is not None, 'R5Chat.lua must contain OnChatMessage() with author query'
-    return result
-
-
-def _insertChatmaidLines(targetLines, targetIndex, linesToInsert):
-    assert targetLines is not None
-    assert targetIndex >= 0
-    assert linesToInsert is not None
-
-    targetLines.insert(targetIndex, '')
-    targetLines.insert(targetIndex, '-- chatmaid - end')
-    for line in reversed(linesToInsert):
-        targetLines.insert(targetIndex, line)
-    targetLines.insert(targetIndex, '-- chatmaid - begin')
-    targetLines.insert(targetIndex, '')
-
-
 def _buildModifiedLuaFiles():
     chatOptionsRules = modtext.ModRules(os.path.abspath('ChatOptions_mod.lua'))
     chatOptionsRules.apply(_backupPath(_ChatOptionsLuaPath), _modifiedChatOptionsLuaPath)
     r5ChatRules = modtext.ModRules(os.path.abspath('R5Chat_mod.lua'))
     r5ChatRules.apply(_backupPath(_R5ChatLuaPath), _modifiedR5ChatLuaPath)
 
+
 def _buildChatmaidZip():
+    melderInfoTemplatePath = 'melder_info_template.ini'
+    _log.info('read template for melder info from %s', melderInfoTemplatePath)
+    with open(melderInfoTemplatePath, 'r', encoding='utf-8') as melderInfoTemplateFile:
+        melderInfoTemplate = string.Template(melderInfoTemplateFile.read())
+
     melderInfoPath = os.path.join(_buildFolder, 'melder_info.ini')
     _log.info('write melder info to %s', melderInfoPath)
+    textToWrite = melderInfoTemplate.substitute(_MelderSymbols)
     with open(melderInfoPath, 'w', encoding='utf-8') as melderInfoFile:
-        for lineToWrite in _MelderInfoCode:
-            melderInfoFile.write(lineToWrite)
-            melderInfoFile.write('\n')
+        melderInfoFile.write(textToWrite)
 
     targetZipName = 'Chatmaid_v' + __version__ + '.zip'
     targetZipPath = os.path.join(_distFolder, targetZipName)
@@ -162,7 +111,7 @@ def _permutations(pools):
     indices = [0] * poolCount
     maxIndices = [len(pools[i]) - 1 for i in range(len(pools))]
     poolIndex = 0
-    while (poolIndex >= 0):
+    while poolIndex >= 0:
         yield [pools[i][indices[i]] for i in range(poolCount)]
         poolIndex = poolCount - 1
         hasAdvanced = False
