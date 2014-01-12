@@ -1,4 +1,7 @@
-"""Build R5Chat.lua that integrates chatmaid.lua"""
+# -*- coding: utf-8 -*-
+"""
+Build R5Chat.lua that integrates chatmaid.lua
+"""
 
 # Ensure Python is current enough.
 import sys
@@ -31,9 +34,9 @@ _MelderSymbols = {
 _buildFolder = os.path.abspath('build')
 _distFolder = os.path.abspath('dist')
 
-_ChatOptionsLuaPath = \
-    r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat\ChatOptions.lua'
-_R5ChatLuaPath = r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat\R5Chat.lua'
+_R5ChatFolderPath = r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat'
+_ChatOptionsLuaPath = os.path.join(_R5ChatFolderPath, 'ChatOptions.lua')
+_R5ChatLuaPath = os.path.join(_R5ChatFolderPath, 'R5Chat.lua')
 _modifiedR5ChatLuaPath = os.path.join(_buildFolder, 'R5Chat.lua')
 _modifiedChatOptionsLuaPath = os.path.join(_buildFolder, 'ChatOptions.lua')
 
