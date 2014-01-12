@@ -11,8 +11,8 @@ local function assertArrayEquals(actual, expected)
     assert(actualWordsText == expectedWordsText, actualWordsText.." ~= "..expectedWordsText)
 end
 
-local function assertSanitized(channel, utf8text, expectedMessage, expectedAction)
-    actualMessage, actualAction = sanitized(channel, utf8text)
+local function assertSanitized(channel, utf8text, settings, expectedMessage, expectedAction)
+    actualMessage, actualAction = sanitized(channel, utf8text, settings)
     assertStringEquals("message", actualMessage, expectedMessage)
     assertStringEquals("action", actualAction, expectedAction)
 end
@@ -54,12 +54,18 @@ assert(GuessedLanguage("Sémillon") == "fr")
 assert(GuessedLanguage(string.char(128)) == "xx")
 
 print("test sanitized")
-assertSanitized("zone", "hello", "hello", nil)
-assertSanitized("zone", "   messed   up space ", "messed up space", "cleanup whitespace")
-assertSanitized("zone", "no!!!", "no!", "cleanup punctuation")
-if enableHideGerman then
-    assertSanitized("zone", "für nix", nil, "hide german")
-end
-assertSanitized("zone", "ty", nil, "hide thanks")
+settings = {
+    cleanupWhitespace = true,
+    cleanMultiplePunctuation = true,
+}
+assertSanitized("zone", "hello", settings, "hello", nil)
+assertSanitized("zone", "   messed   up space ", settings, "messed up space", "cleanup whitespace")
+assertSanitized("zone", "no!!!", settings, "no!", "cleanup punctuation")
+settings.hideGeDuNo = true
+assertSanitized("zone", "für nix", settings, nil, "hide german/dutch/nordic")
+
+assertSanitized("zone", "ty", settings, "ty", nil)
+settings.hideThanks = true
+assertSanitized("zone", "ty", settings, nil, "hide thanks")
 
 print "SUCCESS: all tests passed"

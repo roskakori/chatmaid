@@ -11,7 +11,17 @@
 @after "\tend"
 	-- TODO: only check if IO_Settings.General.ChatmaidEnabled is true.
 	if IO_Settings.General.ChatmaidEnabled then
-		text, action = sanitized(args.channel, args.text)
+        chatmaidSettings = {
+            cleanMultiplePunctuation = true,
+            cleanupWhitespace = true,
+            hideCyrillic = IO_Settings.General.ChatmaidHideCyrillic,
+            hideFrench = IO_Settings.General.ChatmaidHideFrench,
+            hideGeDuNo = IO_Settings.General.ChatmaidHideGeDuNo,
+            hideNonAscii = IO_Settings.General.ChatmaidHideNonAscii,
+            hideSingleCharacters = true,
+            hideThanks = true,
+        }
+		text, action = sanitized(args.channel, args.text, chatmaidSettings)
 		if action ~= nil then
 			if IO_Settings.General.ChatmaidExplainActions then
 				args.text = args.text.." ["..action.."]"

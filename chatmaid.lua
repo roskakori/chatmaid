@@ -2,28 +2,6 @@
 
 -- Settings
 
--- TODO: Hide messages with non ASCII characters
--- (which includes many non English languages).
-local enableHideNonAscii = false
-
--- Hide certain languages?
-local enableHideFrench = true
-local enableHideGerman = true
-local enableHideRussian = true
-
--- Hide plain "thanks" messages (and variants)?
-local enableHideThanks = true
-
--- Hide messages containing no letters, for example a sole "/".
-local enableHideSingleCharacters = true
-
--- Remove leading, trailing and redundant whitespace?
--- For example, " hello   world  " becomes "hello world"
-local enableCleanWhitespace = true
-
--- Reduce multiple exclamation and question marks to a single one.
--- For example "no!!!" becomes "no!"
-local enableCleanMultiplePunctuation = true
 
 
 -- TODO: How to deal with screaming in all upper case?
@@ -221,7 +199,7 @@ function arrayText(items)
             result = result..", "
         end
         -- TODO: Quote only strings.
-        -- TODO: Applay escapes on strings.
+        -- TODO: Apply escapes on strings.
         -- TODO: Use boolText() on boolean items.
         result = result..'"'..item..'"'
     end
@@ -295,7 +273,7 @@ function cleanedWhitespace(text)
     return result
 end
 
--- Similar to text but without redundant exlemation and question marks.
+-- Similar to text but without redundant exclamation and question marks.
 function cleanedPunctuation(text)
     -- Reduce multiple exclamation and question marks to a single one.
     return text:gsub("!+", "!"):gsub("?+", "?")
@@ -303,7 +281,7 @@ end
 
 function GuessedLanguage(utf8text)
     -- A (cursory) guess for the language in which utf8text is written.
-    local result = nil
+    local result
     local codes = unicodes(utf8text)
     local codeIndex = 1
     while (codeIndex <= #codes) and (result == nil) do
@@ -328,10 +306,27 @@ function GuessedLanguage(utf8text)
 end
 
 -- A tuple containing the message and actions performed on it based on the
--- channel and utf8text of the original message. If the message should be
--- hidden, it is nil. If no actions have been performed, they are nil.
-function sanitized(channel, utf8text)
-    -- TODO: Hide non ASCII.
+-- channel, utf8text of the original message and message. If the message
+-- should be hidden, it is nil. If no actions have been performed, they are
+-- nil.
+--
+-- Settings are a table where the following keys can be set:
+--
+-- * TODO: cleanupWhitespace - remove leading, trailing and redundant whitespace?
+--   For example, " hello   world  " becomes "hello world"
+-- * TODO: cleanMultiplePunctuation - reduce multiple exclamation and question
+--   marks to a single one? For example "no!!!" becomes "no!"
+-- * hideCyrillic: hide messages using Cyrillic alphabet
+-- * hideFrench: hide messages using French alphabet
+-- * hideGeDuNo: hide messages using German, Dutch or Nordic alphabet
+-- * hideNonAscii: hide messages using non ASCII characters
+-- * hideSingleCharacters: hide single characters
+-- * hideThanks: hide "thank you" messages
+function sanitized(channel, utf8text, settings)
+    assert(channel ~= nil)
+    assert(utf8text ~= nil)
+    assert(settings ~= nil)
+
     local actions = ""
     local cleanedText = utf8text
 
@@ -353,17 +348,19 @@ function sanitized(channel, utf8text)
     -- Hide undesired languages.
     if (channel == "zone") or (channel == "local") then
         local language = GuessedLanguage(cleanedText)
-        if enableHideFrench and (language == "fr") then
+        if settings.hideCyrillic and (language == "ru") then
+            return nil, "hide cyrillic"
+        elseif settings.hideFrench and (language == "fr") then
             return nil, "hide french"
-        elseif enableHideGerman and (language == "de") then
-            return nil, "hide german"
-        elseif enableHideRussian and (language == "ru") then
-            return nil, "hide russian"
+        elseif settings.hideGeDuNo and (language == "de") then
+            return nil, "hide german/dutch/nordic"
+        elseif settings.hideNonAscii and (language ~= "en") then
+            return nil, "hide non ascii"
         end
     end
 
     -- Hide single characters.
-    if enableHideSingleCharacters then
+    if settings.hideSingleCharacters then
         local isSingleCharacter = (cleanedText:len() == 1)
         local isDigit = (cleanedText >= "0") and (cleanedText <= "9")
         if isSingleCharacter and not isDigit and (VALID_SINGLE_CHARACTERS[cleanedText] == nil) then
@@ -371,7 +368,7 @@ function sanitized(channel, utf8text)
         end
     end
 
-    if (channel == "zone") and enableHideThanks and (THANKS[cleanedText] ~= nil) then
+    if (channel == "zone") and settings.hideThanks and (THANKS[cleanedText] ~= nil) then
         return nil, "hide thanks"
     end
 

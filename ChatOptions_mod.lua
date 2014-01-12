@@ -4,10 +4,10 @@
 @after "for i, tab in ipairs(IO_Settings.Tabs) do"
 @after "end"
 InterfaceOptions.StartGroup({id="CHATMAID_ENABLED", label="Chatmaid", checkbox=IO_Settings.General.ChatmaidEnabled, default=true})
-InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_NON_ASCII", label="Hide non ASCII", tooltip="Hide chat messages containin non ASCII characters.", default=IO_Settings.General.ChatmaidHideNonAscii});
-InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_FRENCH", label="Hide French", tooltip="Hide (some) chat messages in French language.", default=IO_Settings.General.ChatmaidHideFrench});
-InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_GERMAN", label="Hide German", tooltip="Hide (some) chat messages in German language.", default=IO_Settings.General.ChatmaidHideGerman});
-InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_RUSSIAN", label="Hide Russian", tooltip="Hide chat messages in Russian language.", default=IO_Settings.General.ChatmaidHideRussian});
+InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_NON_ASCII", label="Hide messages using letters outside of basic Latin alphabet", tooltip="Technically speaking: non ASCII characters", default=IO_Settings.General.ChatmaidHideNonAscii});
+InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_FRENCH", label="Hide messages using French alphabet", default=IO_Settings.General.ChatmaidHideFrench});
+InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_GEDUNO", label="Hide messages using German, Dutch or Nordic alphabet", tooltip="Also hides: Danish, Finnish, Norwegian, Swedish", default=IO_Settings.General.ChatmaidHideGeDuNo});
+InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_CYRILLIC", label="Hide messages using Cyrillic alphabet (e.g. Russian)", default=IO_Settings.General.ChatmaidHideCyrillic});
 InterfaceOptions.AddCheckBox({id="CHATMAID_EXPLAIN_ACTIONS", label="Explain actions", tooltip="Explain actions that would have been performed on chat messages (if any).", default=IO_Settings.General.ChatmaidExplainActions});
 InterfaceOptions.StopGroup()
 
@@ -16,10 +16,10 @@ InterfaceOptions.StopGroup()
 @before "\t},"
 		ChatmaidEnabled = true,
 		ChatmaidExplainActions = true,
+		ChatmaidHideCyrillic = true,
 		ChatmaidHideFrench = false,
-		ChatmaidHideGerman = false,
+		ChatmaidHideGeDuNo = false,
 		ChatmaidHideNonAscii = false,
-		ChatmaidHideRussian = true,
 
 @mod "handle settings events"
 @after "function OnOptionChange(id, val)"
@@ -28,11 +28,11 @@ InterfaceOptions.StopGroup()
 		IO_Settings.General.ChatmaidEnabled = val
 	elseif id == "CHATMAID_EXPLAIN_ACTIONS" then
 		IO_Settings.General.ChatmaidExplainActions = val
+	elseif id == "CHATMAID_HIDE_CYRILLIC" then
+		IO_Settings.General.ChatmaidHideCyrillic = val
 	elseif id == "CHATMAID_HIDE_FRENCH" then
 		IO_Settings.General.ChatmaidHideFrench = val
-	elseif id == "CHATMAID_HIDE_GERMAN" then
-		IO_Settings.General.ChatmaidHideGerman = val
+	elseif id == "CHATMAID_HIDE_GEDUNO" then
+		IO_Settings.General.ChatmaidHideGeDuNo = val
 	elseif id == "CHATMAID_HIDE_NON_ASCII" then
 		IO_Settings.General.ChatmaidHideNonAscii = val
-	elseif id == "CHATMAID_HIDE_RUSSIAN" then
-		IO_Settings.General.ChatmaidHideRussian = val
