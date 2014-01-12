@@ -2,8 +2,8 @@ Chatmaid
 ========
 
 Chatmaid is an addon for the MMOFPS Firefall (available from
-<http://www.firefallthegame.com/>) to improve the quality of the conversation
-in the `/zone` chat.
+<http://www.firefallthegame.com/>) to hide or clean up unwanted messages in
+public char channels.
 
 Chatmaid wipes the chat clean from "thank you" messages that should have gone
 to `/local` or `/whisper`, brings out the garbage from non English messages
@@ -54,8 +54,8 @@ Interface > Chat.
 
 "Hide French" and "Hide German" hides messages that contain non ASCII
 characters common to the French or German language. For instance, the German
-message "So ein Blödsinn!" is hidden because it contains the German Umlaut
-"ö". However, the also German message "So ein Unsinn!" is preserved because it
+message "So ein Blï¿½dsinn!" is hidden because it contains the German Umlaut
+"ï¿½". However, the also German message "So ein Unsinn!" is preserved because it
 uses only ASCII.
 
 "Hide Russian" hides messages that contain Cyrillic letters.
