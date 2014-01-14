@@ -23,34 +23,39 @@ local function Set (list)
     return result
 end
 
+-- Types that repr() can show directly using tostring().
+local _TOSTRINGABLE_TYPES = Set{"nil", "number" }
+
 -- A string describing item (somewhat similar to Python's repr()).
 function repr(item)
     local result
-    if item == nil then
-        result = "nil"
-    else
-        local itemType = type(item)
-        if type(item) == "string" then
-            result = '"'
-            for i = 1, item:len() do
-                local c = item:sub(i, i)
-                local code = c:byte(1)
-                -- TODO: Remove: print("  "..code)
-                if c == "\n" then
-                    c = "\\n"
-                elseif c == "\r" then
-                    c = "\\r"
-                elseif c == "\t" then
-                    c = "\\t"
-                elseif (code < 32) or (code > 127) then
-                    c = string.format("\\x%02x", code)
-                end
-                result = result..c
+    local itemType = type(item)
+    if _TOSTRINGABLE_TYPES[itemType] then
+        result = tostring(item)
+    elseif itemType == "string" then
+        result = '"'
+        for i = 1, item:len() do
+            local c = item:sub(i, i)
+            local code = c:byte(1)
+            -- TODO: Remove: print("  "..code)
+            if c == "\"" then
+                c = "\\\""
+            elseif c == "\\" then
+                c = "\\\\"
+            elseif c == "\n" then
+                c = "\\n"
+            elseif c == "\r" then
+                c = "\\r"
+            elseif c == "\t" then
+                c = "\\t"
+            elseif (code < 32) or (code > 127) then
+                c = string.format("\\x%02x", code)
             end
-            result = result..'"'
-        else
-            result = "<type:"..type(item)..">"
+            result = result..c
         end
+        result = result..'"'
+    else
+        result = "<type:"..type(item)..">"
     end
     return result
 end
