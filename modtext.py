@@ -1,4 +1,7 @@
-'''Mod text file according to a mod description.'''
+# -*- coding: utf-8 -*-
+"""
+Mod text file according to a mod description.
+"""
 import ast
 import fnmatch
 import logging
