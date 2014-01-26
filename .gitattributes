@@ -1,3 +1,6 @@
+*.ini    text
 *.lua    text
+*.md     text
 *.py     text
+*.txt    text
 *.xml    text
