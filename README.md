@@ -133,7 +133,7 @@ To build the distribution archive from scratch, you need to install:
 3. Python 3.3 (or later), available from <http://www.python.org/getit/>.
 
 You can check out the source code from
-<https://bitbucket.org/roskakori/chatmaid>.
+<https://github.com/roskakori/chatmaid>.
 
 While you can build everything from integrated developer environments, the
 easiest way is to use `cmd.exe` and `cd` into the folder where you just
@@ -149,5 +149,5 @@ To build the `Chatmaid_v*.zip` and copy it to Melder's addon folder, run:
 python build_chatmaid.py
 ```
 
-If you improved the code, feel free to fork chatmaid on bitbuckt and submit a
+If you improved the code, feel free to fork chatmaid on Github and submit a
 pull request.
