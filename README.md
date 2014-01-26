@@ -38,7 +38,7 @@ by visiting <http://astrekassociation.com/melder.php?id=1255421>.
 
 For manual installation, visit the
 [Chatmaid thread](http://forums.firefallthegame.com/community/threads/2868821/)
-in the offical Firefall forums.
+in the official Firefall forums.
 
 The modified files are stored in 
 `C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat`.
@@ -73,6 +73,18 @@ Limitations
 
 Version history
 ---------------
+
+Version 0.3, 2014-01-xx
+* Changed from a language based approach to an alphabet based one.
+  * Changed option to hide Russian messages to hide messages using Cyrillic
+    alphabet
+  * Changed to option to hide German messages to hide messages using German,
+    Dutch or nordic alphabet.
+  * Added option to hide messages using letters outside of the basic Latin
+    alphabet (a-z).
+* Added option to hide messages using common non English words. Currently
+  the dictionary contains a few very common French and German words such as
+  "avec" and "mit". Messages using any of these words can be hidden.
 
 Version 0.2, 2014-01-01
 * Added configuration to Options > Interface > Chat.

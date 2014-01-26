@@ -87,6 +87,64 @@ local VALID_SINGLE_CHARACTERS = Set{
     "?", -- confused
 }
 
+-- Common non english words using only basic latin alphabet for
+-- hideCommonNonEnglish.
+--
+-- These words must not be "proper" English words too.
+-- For example, the German "hat" (meaning "has") or "war" (meaning "was")
+-- would be invalid because there is also an English word with the same
+-- letters but a different meaning.
+--
+-- The languages on this list are derived from intuitively watching the zone
+-- chat on eu-west servers and only includes languages that show up on a
+-- regular base.
+local COMMON_NON_ENGLISH_WORDS = Set{
+    -- French; see also: http://french.about.com/od/vocabulary/ss/mostcommonwords.htm.
+    "alors",
+    "avoir",
+    "faire",
+    "merci",
+    "moi",
+    "nous",
+    "oui",
+    "pour",
+    "que",
+    "sans",
+    "tout",
+    "voir",
+    "vous",
+-- German, see also: http://german.about.com/library/blwfreq_t50.htm.
+    "aber",
+    "auch",
+    "dann",
+    "dein",
+    "deine",
+    "deiner",
+    "du",
+    "durch",
+    "ein",
+    "eine",
+    "einer",
+    "ich",
+    "ist",
+    "kann",
+    "kannst",
+    "mein",
+    "meine",
+    "meiner",
+    "musst",
+    "nicht",
+    "noch",
+    "sein",
+    "sind",
+    "und",
+    "wer",
+    "werden",
+    "wie",
+    "wird",
+    "wo",
+}
+
 -- Unicodes for to detect certain languages.
 -- See also: http://en.wikipedia.org/wiki/ISO_basic_Latin_alphabet.
 local GERMAN_UNICODES = Set{
@@ -321,6 +379,8 @@ end
 --   For example, " hello   world  " becomes "hello world"
 -- * TODO: cleanMultiplePunctuation - reduce multiple exclamation and question
 --   marks to a single one? For example "no!!!" becomes "no!"
+-- * hideCommonFrench: hide messages using common French words
+-- * hideCommonGerman: hide messages using common German words
 -- * hideCyrillic: hide messages using Cyrillic alphabet
 -- * hideFrench: hide messages using French alphabet
 -- * hideGeDuNo: hide messages using German, Dutch or Nordic alphabet
@@ -334,6 +394,7 @@ function sanitized(channel, utf8text, settings)
 
     local actions = ""
     local cleanedText = utf8text
+    local isPublicChannel = (channel == "zone") or (channel == "local")
 
     -- Remove leading and trailing whitespace.
     local previousText = cleanedText
@@ -350,8 +411,17 @@ function sanitized(channel, utf8text, settings)
         actions = actions.."; cleanup punctuation"
     end
 
-    -- Hide undesired languages.
-    if (channel == "zone") or (channel == "local") then
+    -- Hide single characters.
+    if settings.hideSingleCharacters then
+        local isSingleCharacter = (cleanedText:len() == 1)
+        local isDigit = (cleanedText >= "0") and (cleanedText <= "9")
+        if isSingleCharacter and not isDigit and (VALID_SINGLE_CHARACTERS[cleanedText] == nil) then
+            return nil, "hide single character"
+        end
+    end
+
+    -- Hide undesired alphabets.
+    if isPublicChannel then
         local language = GuessedLanguage(cleanedText)
         if settings.hideCyrillic and (language == "ru") then
             return nil, "hide cyrillic"
@@ -364,12 +434,13 @@ function sanitized(channel, utf8text, settings)
         end
     end
 
-    -- Hide single characters.
-    if settings.hideSingleCharacters then
-        local isSingleCharacter = (cleanedText:len() == 1)
-        local isDigit = (cleanedText >= "0") and (cleanedText <= "9")
-        if isSingleCharacter and not isDigit and (VALID_SINGLE_CHARACTERS[cleanedText] == nil) then
-            return nil, "hide single character"
+    -- Hide messages with common non English words.
+    if isPublicChannel and settings.hideCommonNonEnglish then
+        local cleanedWords = letteredWords(words(cleanedText))
+        for _, word in ipairs(cleanedWords) do
+            if COMMON_NON_ENGLISH_WORDS[word] then
+                return nil, "hide common non english"
+            end
         end
     end
 

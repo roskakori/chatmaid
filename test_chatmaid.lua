@@ -70,4 +70,8 @@ assertSanitized("zone", "ty", settings, "ty", nil)
 settings.hideThanks = true
 assertSanitized("zone", "ty", settings, nil, "hide thanks")
 
+assertSanitized("zone", "das geht doch nicht", settings, "das geht doch nicht", nil)
+settings.hideCommonNonEnglish = true
+assertSanitized("zone", "das geht doch nicht", settings, nil, "hide common non english")
+
 print "SUCCESS: all tests passed"
