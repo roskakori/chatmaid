@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Build R5Chat.lua that integrates chatmaid.lua
+Build Firefall chatmaid mod.
 """
 
 # Ensure Python is current enough.
@@ -20,7 +20,7 @@ import modtext
 __version__ = '0.3'
 
 # TODO: Obtain current Firefall patch number programmatically.
-_FirefallVersion = '0.7.1735'
+_FirefallVersion = '0.8.1738'
 
 # Numeric ID from the attachments link in the Firefall forums; used by Melder button.
 # See http://forums.firefallthegame.com/community/threads/mod-chatmaid-improve-conversations-in-zone-chat.2868821/.
@@ -34,10 +34,10 @@ _MelderSymbols = {
 _buildFolder = os.path.abspath('build')
 _distFolder = os.path.abspath('dist')
 
-_R5ChatFolderPath = r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat'
-_ChatOptionsLuaPath = os.path.join(_R5ChatFolderPath, 'ChatOptions.lua')
-_R5ChatLuaPath = os.path.join(_R5ChatFolderPath, 'R5Chat.lua')
-_modifiedR5ChatLuaPath = os.path.join(_buildFolder, 'R5Chat.lua')
+_FirefallChatFolderPath = r'C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\HUD\Chat'
+_ChatOptionsLuaPath = os.path.join(_FirefallChatFolderPath, 'ChatOptions.lua')
+_ChatLuaPath = os.path.join(_FirefallChatFolderPath, 'Chat.lua')
+_modifiedChatLuaPath = os.path.join(_buildFolder, 'Chat.lua')
 _modifiedChatOptionsLuaPath = os.path.join(_buildFolder, 'ChatOptions.lua')
 
 _log = logging.getLogger('build_chatmaid')
@@ -72,8 +72,8 @@ def _slurped(pathToRead):
 def _buildModifiedLuaFiles():
     chatOptionsRules = modtext.ModRules(os.path.abspath('ChatOptions_mod.lua'))
     chatOptionsRules.apply(_backupPath(_ChatOptionsLuaPath), _modifiedChatOptionsLuaPath)
-    r5ChatRules = modtext.ModRules(os.path.abspath('R5Chat_mod.lua'))
-    r5ChatRules.apply(_backupPath(_R5ChatLuaPath), _modifiedR5ChatLuaPath)
+    chatRules = modtext.ModRules(os.path.abspath('Chat_mod.lua'))
+    chatRules.apply(_backupPath(_ChatLuaPath), _modifiedChatLuaPath)
 
 
 def _buildChatmaidZip():
@@ -92,7 +92,7 @@ def _buildChatmaidZip():
     targetZipPath = os.path.join(_distFolder, targetZipName)
     _log.info('write distribution archive to %s', targetZipPath)
     with zipfile.ZipFile(targetZipPath, 'w') as targetZipFile:
-        for pathToAdd in (_modifiedChatOptionsLuaPath, _modifiedR5ChatLuaPath, melderInfoPath):
+        for pathToAdd in (_modifiedChatOptionsLuaPath, _modifiedChatLuaPath, melderInfoPath):
             _log.info('  add %s', pathToAdd)
             targetZipFile.write(pathToAdd, os.path.basename(pathToAdd))
 
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     os.makedirs(_buildFolder, exist_ok=True)
     os.makedirs(_distFolder, exist_ok=True)
     _possiblyBuildBackup(_ChatOptionsLuaPath)
-    _possiblyBuildBackup(_R5ChatLuaPath)
+    _possiblyBuildBackup(_ChatLuaPath)
     _buildModifiedLuaFiles()
     _buildChatmaidZip()
     _logMelderButton()
