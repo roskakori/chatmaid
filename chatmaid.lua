@@ -1,20 +1,10 @@
 -- chatmaid -- improve the level of conversation in Firefalls's chat.
 
--- Settings
-
-
-
 -- TODO: How to deal with screaming in all upper case?
 --
 -- "hide" hides such messages, "cleanup" makes them easier to read by changing
 -- them to all lower case.
 local handleScreaming = "cleanup"
-
--- Instead of performing actions only append the proposed action to the
--- message. For example "ty" becomes "ty [hide thanks]". This is useful for
--- testing and debugging.
-local enableTraceActions = true
-
 
 local function Set (list)
     -- Set datatype as described in http://www.lua.org/pil/11.5.html.
