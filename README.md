@@ -74,7 +74,8 @@ Limitations
 Version history
 ---------------
 
-Version 0.3, 2014-01-xx
+Version 0.3, 2014-02-01
+* Upgraded to new chat component in Firefall 0.8.
 * Changed from a language based approach to an alphabet based one.
   * Changed option to hide Russian messages to hide messages using Cyrillic
     alphabet
