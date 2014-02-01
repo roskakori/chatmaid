@@ -150,7 +150,7 @@ class ModOptions(object):
         self._keyToValuesMap = {
             'encoding': 'utf-8'
         }
-    def setOption(key, value):
+    def setOption(self, key, value):
         assert key is not None
         assert value is not None
         if key in self._keyToValuesMap:
@@ -158,9 +158,9 @@ class ModOptions(object):
         else:
             raise ModError('option name %s must be changed to one of: %s' % (key, sorted(self._keyToValuesMap.keys())))
 
-    def getOption(key):
+    def getOption(self, key):
         assert key is not None
-        result = self.get(_keyToValuesMap[key])
+        result = self.get(self._keyToValuesMap[key])
         if result is None:
             raise ModError('option name %s must be changed to one of: %s' % (key, sorted(self._keyToValuesMap.keys())))
         return result
