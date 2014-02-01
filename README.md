@@ -74,6 +74,9 @@ Limitations
 Version history
 ---------------
 
+Version 0.4, 2014-xx-xx
+* Fixed broken forum link in Melder.
+
 Version 0.3, 2014-02-01
 * Upgraded to new chat component in Firefall 0.8.
 * Changed from a language based approach to an alphabet based one.
