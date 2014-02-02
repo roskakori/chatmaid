@@ -3,7 +3,7 @@ Chatmaid
 
 Chatmaid is an addon for the MMOFPS Firefall (available from
 <http://www.firefallthegame.com/>) to hide or clean up unwanted messages in
-public char channels.
+public chat channels.
 
 Chatmaid wipes the chat clean from "thank you" messages that should have gone
 to `/local` or `/whisper`, brings out the garbage from non English messages
@@ -20,8 +20,7 @@ Features
 
 * Hides thanks (typically for revives) that would better be sent using
   `/local` or `/whisper`.
-* Hides all Russian messages and also some German and French ones (provided
-  they use non ASCII characters).
+* Hides messages using letters from Cyrillic, German, French alphabet.
 * Hides single character messages like `/` (typically caused by slips on the
   keyboard); common one letter abbreviations such as `y` for yes and `k` for
   ok are preserved.
@@ -41,7 +40,7 @@ For manual installation, visit the
 in the official Firefall forums.
 
 The modified files are stored in 
-`C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\Panels\R5Chat`.
+`C:\Program Files (x86)\Red 5 Studios\Firefall\system\gui\components\MainUI\HUD\Chat`.
 
 
 Configuration
@@ -52,16 +51,27 @@ Interface > Chat.
 
 ![Screenshot: Chatmaid Options](chatmaid_options.png)
 
-"Hide French" and "Hide German" hides messages that contain non ASCII
-characters common to the French or German language. For instance, the German
-message "So ein Bl�dsinn!" is hidden because it contains the German Umlaut
-"�". However, the also German message "So ein Unsinn!" is preserved because it
-uses only ASCII.
+"Hide messages using letters outside of basic Latin alphabet" hides every
+message that contains letters other than A - Z (or technically speaking: non
+ASCII characters).
 
-"Hide Russian" hides messages that contain Cyrillic letters.
+"Hide messages using French alphabet" hides messages containing special
+characters from the French alphabet.
+
+"Hide messages using German, Dutch or Nordic alphabet" hides messages
+containing special letters from the German, Dutch or the alphabet for Nordic
+languages such as Swedish, for example "So ein Blödsinn". These alphabets are
+lumped together in one option because the share a large number of letters.
+
+"Hide messages using Cyrillic alphabet (e.g. Russian)" hides messages
+containing Cyrillic letters, for example "Как я могу получить газ?"
+
+"Hide messages using common non English words" currently hides some messages
+that use only letters A - Z but contains common French or German words such
+as "avoir" or "auch".
 
 "Explain actions" prevents Chatmaid from actually hiding or cleaning up
-messages. Instead, Chatmaid would appends a remark to messages it would have
+messages. Instead, Chatmaid appends a remark to messages it would have
 acted upon. For example "ty" becomes "ty [hide thanks]".
 
 
