@@ -15,7 +15,7 @@
             hideCyrillic = chatmaid_GlobalOptions.ChatmaidHideCyrillic,
             hideFrench = chatmaid_GlobalOptions.ChatmaidHideFrench,
             hideGeDuNo = chatmaid_GlobalOptions.ChatmaidHideGeDuNo,
-            hideNonAscii = chatmaid_GlobalOptions.ChatmaidHideNonAscii,
+            -- FIXME #1: hideNonAscii = chatmaid_GlobalOptions.ChatmaidHideNonAscii,
             hideSingleCharacters = true,
             hideThanks = true,
         }

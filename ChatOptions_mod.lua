@@ -3,7 +3,7 @@
 @mod "chatmaid - add GUI"
 @before "for _, channel in ipairs(C_ChannelOrder) do"
 InterfaceOptions.StartGroup({id="CHATMAID_ENABLED", label="Chatmaid", checkbox=io_GlobalOptions.ChatmaidEnabled, default=io_GlobalOptions.ChatmaidEnabled})
-InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_NON_ASCII", label="Hide messages using letters outside of basic Latin alphabet", tooltip="Technically speaking: non ASCII characters", default=io_GlobalOptions.ChatmaidHideNonAscii});
+-- FIXME #1: InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_NON_ASCII", label="Hide messages using letters outside of basic Latin alphabet", tooltip="Technically speaking: non ASCII characters", default=io_GlobalOptions.ChatmaidHideNonAscii});
 InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_FRENCH", label="Hide messages using French alphabet", default=io_GlobalOptions.ChatmaidHideFrench});
 InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_GEDUNO", label="Hide messages using German, Dutch or Nordic alphabet", tooltip="Also hides: Danish, Finnish, Norwegian, Swedish", default=io_GlobalOptions.ChatmaidHideGeDuNo});
 InterfaceOptions.AddCheckBox({id="CHATMAID_HIDE_CYRILLIC", label="Hide messages using Cyrillic alphabet (e.g. Russian)", default=io_GlobalOptions.ChatmaidHideCyrillic});
