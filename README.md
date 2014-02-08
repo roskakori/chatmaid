@@ -78,14 +78,18 @@ acted upon. For example "ty" becomes "ty [hide thanks]".
 Limitations
 -----------
 * Currently experimental (my first Firefall addon and Lua program).
-* Dispite chatmaid's best effort some noise remains in the zone chat.
+* Despite chatmaid's best effort some noise remains in the zone chat.
 
 
 Version history
 ---------------
 
-Version 0.4, 2014-xx-xx
-* Fixed broken forum link in Melder.
+Version 0.4, 2014-02-08
+* Fixed broken forum link in Melder. Automatic updates should now work
+  properly.
+* Disabled option "Hide non ASCII" until it handles links (to e.g. locations
+  or items) properly.
+* Applied fixes from Firefall 0.8.1740.
 
 Version 0.3, 2014-02-01
 * Upgraded to new chat component in Firefall 0.8.

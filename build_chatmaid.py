@@ -17,15 +17,14 @@ import zipfile
 
 import modtext
 
-__version__ = '0.3'
+__version__ = '0.4'
 
 # TODO: Obtain current Firefall patch number programmatically.
-_FirefallVersion = '0.8.1738'
+_FirefallVersion = '0.8.1740'
 
 # Numeric ID from the attachments link in the Firefall forums; used by Melder button.
 # See http://forums.firefallthegame.com/community/threads/mod-chatmaid-improve-conversations-in-zone-chat.2868821/.
-_AttachmentId = 1463121
-
+_AttachmentId = 1508621
 _MelderSymbols = {
     'AttachmentId': _AttachmentId,
     'ChatmaidVersion': __version__,
