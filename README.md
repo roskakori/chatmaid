@@ -4,7 +4,7 @@ Chatmaid
 **This project is archived and no longer maintained.**
 
 Chatmaid is an addon for the now defunct MMOFPS 
-[Firefall](https://en.wikipedia.org/wiki/Firefall_(video_game) to hide or 
+[Firefall](https://en.wikipedia.org/wiki/Firefall_\(video_game\)) to hide or 
 clean up unwanted messages in public chat channels.
 
 Chatmaid wipes the chat clean from "thank you" messages that should have gone
